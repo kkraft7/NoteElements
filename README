@@ -1,0 +1,8 @@
+
+Eventually this should be a proper README file with instructions and documentation.
+For now it is just project notes.
+
+To do items:
+* Separate node hierarchies for notes and categories?
+* Add a categories property (or list?) for each note?
+* Figure out proper Hibernate annotations for classes and properties
