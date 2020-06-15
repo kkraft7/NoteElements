@@ -7,7 +7,7 @@ import java.net.URL;
  * Represents a web link.
  */
 public class Link extends NoteElement {
-  URL linkURL;
+  private URL linkURL;
 
   // No-arg constructor required by Hibernate
   protected Link() {
@@ -23,4 +23,9 @@ public class Link extends NoteElement {
   public Link(String name, String url) throws MalformedURLException{ this(name, null, url); }
 
   public URL getUrl() { return linkURL; }
+
+  @Override
+  public String toString() {
+    return "Link:\n" + super.toString() + "\n" + linkURL.toString();
+  }
 }

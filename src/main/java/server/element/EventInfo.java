@@ -1,15 +1,18 @@
 package server.element;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Represents an event date or deadline with completion status.
  */
+// ToDo: Support Date or DateTime?
 public class EventInfo extends NoteElement {
-    LocalDateTime eventDate;
-    CompletionStatus status;
+    private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private LocalDateTime eventDate;
+    private CompletionStatus status;
 
-    enum CompletionStatus { COMPLETED, CANCELED, MISSED }
+    enum CompletionStatus { COMPLETED, UNFINISHED, CANCELED, MISSED }
 
     // No-arg constructor required by Hibernate
     protected EventInfo() {
@@ -20,6 +23,11 @@ public class EventInfo extends NoteElement {
     public EventInfo(String title, String description, LocalDateTime date) {
         super(title, description);
         this.eventDate = date;
+        this.status = CompletionStatus.UNFINISHED;
+    }
+
+    public EventInfo(String title, String description, String dateString) {
+        this(title, description, LocalDateTime.parse(dateString, dateFormat));
     }
 
     public LocalDateTime getDate() { return eventDate; }
@@ -27,4 +35,9 @@ public class EventInfo extends NoteElement {
 
     public CompletionStatus getStatus() { return status; }
     public void setStatus(CompletionStatus newStatus) { this.status = newStatus; }
+
+    @Override
+    public String toString() {
+        return "EventInfo:\n" + super.toString() + "\n" + dateFormat.format(eventDate) + "\n" + status;
+    }
 }

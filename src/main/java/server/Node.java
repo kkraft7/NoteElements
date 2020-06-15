@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 @MappedSuperclass
 public class Node<T> {
-  private String name;
+  String name;
   private Node<T> parentItem;
   private int level;
   private ArrayList<Node<T>> childItems = new ArrayList<>();
@@ -59,6 +59,4 @@ public class Node<T> {
       level = 1;
     }
   }
-
-  // Define toString()?
 }

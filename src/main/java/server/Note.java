@@ -45,4 +45,18 @@ public class Note extends Node<Note> {
 
     public ArrayList<NoteElement> getElements() { return elements; }
     public void addElement(NoteElement newElement) { elements.add(newElement); }
+
+    @Override
+    public String toString() {
+        String result = "Note:\n" + name;
+        if (description != null && !description.equals("")) {
+            result += "\n" + description;
+        }
+        for (NoteElement elem : elements) {
+            // ToDo: Warn if element is null?
+            result = result.concat("\n\n" + elem);
+        }
+        // ToDo: Need to print out any child notes, too!
+        return result;
+    }
 }

@@ -4,10 +4,10 @@ package server.element;
 ** Represents an artwork in a specified medium.
 */
 public class MediaItem extends NoteElement {
-  String creator;
-  Category mediaType;
+  private String creator;
+  private Category mediaType;
 
-  enum Category { RECORD, SONG, BOOK, FILM, TV_SHOW }
+  public enum Category { RECORD, SONG, BOOK, FILM, TV_SHOW }
 
   protected MediaItem() {
     super(null, null);
@@ -27,4 +27,9 @@ public class MediaItem extends NoteElement {
   public void setCreator(String newCreator) { this.creator = newCreator; }
 
   public Category getMediaType() { return mediaType; }   // Not sure if we need a setter for this
+
+  @Override
+  public String toString() {
+    return mediaType.toString() + ":\n" + super.toString() + "\n" + creator;
+  }
 }
