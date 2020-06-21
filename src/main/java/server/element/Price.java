@@ -22,9 +22,8 @@ public class Price extends NoteElement {
     }
 
     public Price(Double itemPrice) {
-        this("Price:", null, new BigDecimal(itemPrice)); }
-
-
+        this("Price:", null, new BigDecimal(itemPrice));
+    }
 
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal newPrice) { this.price = newPrice; }

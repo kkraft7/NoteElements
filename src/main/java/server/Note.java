@@ -56,7 +56,12 @@ public class Note extends Node<Note> {
             // ToDo: Warn if element is null?
             result = result.concat("\n\n" + elem);
         }
-        // ToDo: Need to print out any child notes, too!
+        if (getChildItems().size() > 0) {
+            result += "\n\nSub Notes:\n";
+            for (Node<Note> item : getChildItems()) {
+                result = result.concat("\n" + item + "\n");
+            }
+        }
         return result;
     }
 }

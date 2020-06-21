@@ -23,6 +23,7 @@ public class Link extends NoteElement {
   public Link(String name, String url) throws MalformedURLException{ this(name, null, url); }
 
   public URL getUrl() { return linkURL; }
+  // ToDo: Need setter for Hibernate?
 
   @Override
   public String toString() {
