@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
  * Represents an event date or deadline with completion status.
  */
 // ToDo: Support Date or DateTime?
-public class EventInfo extends NoteElement {
+public class EventInfo extends NoteElement<EventInfo> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private LocalDateTime eventDate;
     private CompletionStatus status;

@@ -7,7 +7,7 @@ import java.security.PublicKey;
 /**
  * Represents an item price.
  */
-public class Price extends NoteElement {
+public class Price extends NoteElement<Price> {
     private BigDecimal price;
 
     // No-arg constructor required by Hibernate

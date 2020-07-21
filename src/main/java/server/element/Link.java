@@ -6,7 +6,8 @@ import java.net.URL;
 /**
  * Represents a web link.
  */
-public class Link extends NoteElement {
+public class Link extends NoteElement<Link> {
+  // ToDo: See if I can set this to final once I get the Hibernate stuff working
   private URL linkURL;
 
   // No-arg constructor required by Hibernate

@@ -3,7 +3,7 @@ package server.element;
 /**
 ** Represents a contact (person or business entity).
 */
-public class Contact extends NoteElement {
+public class Contact extends NoteElement<Contact> {
   private String phoneNumber;
   private String address1;
   private String address2;
@@ -12,12 +12,16 @@ public class Contact extends NoteElement {
   private Integer postalCode;
 
   // No-arg constructor required by Hibernate
-  protected Contact() {
+  public Contact() {
     super(null, null);
     this.phoneNumber = null;
     this.address1 = null;
     this.city = null;
   }
+
+  // Used for the builder pattern since Contact is a bit more complex
+  // (this is why all the setters return Contact)
+  public Contact(String contactName, String newDesc) { super(contactName, newDesc); }
 
   public Contact(String contactName, String newDesc, String newPhone, String addr1, String addr2,
                  String cityName, String stateName, Integer newCode) {
@@ -35,22 +39,22 @@ public class Contact extends NoteElement {
   }
 
   public String getPhoneNumber() { return phoneNumber; }
-  public void setPhoneNumber(String newPhone) { this.phoneNumber = newPhone; }
+  public Contact setPhoneNumber(String newPhone) { this.phoneNumber = newPhone; return this; }
 
   public String getAddress1() { return address1; }
-  public void setAddress1(String addr1) { this.address1 = addr1; }
+  public Contact setAddress1(String addr1) { this.address1 = addr1; return this; }
 
   public String getAddress2() { return address2; }
-  public void setAddress2(String addr2) { this.address2 = addr2; }
+  public Contact setAddress2(String addr2) { this.address2 = addr2; return this; }
 
   public String getCity() { return city; }
-  public void setCity(String newCity) { this.city = newCity; }
+  public Contact setCity(String newCity) { this.city = newCity; return this; }
 
   public String getState() { return state; }
-  public void setState(String newState) { this.state = newState; }
+  public Contact setState(String newState) { this.state = newState; return this; }
 
   public Integer getPostalCode() { return postalCode; }
-  public void setPostalCode(Integer code) { this.postalCode = code; }
+  public Contact setPostalCode(Integer code) { this.postalCode = code; return this; }
 
   @Override
   public String toString() {

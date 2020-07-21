@@ -1,35 +1,37 @@
 package server.element;
 
+import server.categories.MediaType;
+
 /**
 ** Represents an artwork in a specified medium.
 */
-public class MediaItem extends NoteElement {
+public class MediaItem extends NoteElement<MediaItem> {
   private String creator;
-  private Category mediaType;
+  private final MediaType type;
 
-  public enum Category { RECORD, SONG, BOOK, FILM, TV_SHOW }
+  // public enum Category { RECORD, SONG, BOOK, FILM, TV_SHOW, VIDEO }
 
   protected MediaItem() {
     super(null, null);
     this.creator = null;
-    this.mediaType = null;
+    this.type = null;
   }
 
-  public MediaItem(String title, String description, String creator, Category type) {
+  public MediaItem(String title, String description, String creator, MediaType type) {
     super(title, description);
     this.creator = creator;
-    this.mediaType = type;
+    this.type = type;
   }
 
-  public MediaItem(String title, String creator, Category type) { this(title, null, creator, type); }
+  public MediaItem(String title, String creator, MediaType type) { this(title, null, creator, type); }
 
   public String getCreator() { return creator; }
   public void setCreator(String newCreator) { this.creator = newCreator; }
 
-  public Category getMediaType() { return mediaType; }   // Not sure if we need a setter for this
+  public MediaType getMediaType() { return type; }   // Do we need a setter for this?
 
   @Override
   public String toString() {
-    return mediaType.toString() + ":\n" + super.toString() + "\n" + creator;
+    return type.name() + ":\n" + super.toString() + "\n" + creator;
   }
 }

@@ -1,9 +1,11 @@
 package server;
 
 import server.element.NoteElement;
+import server.categories.CategoryTag;
+
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.*;
+import org.apache.logging.log4j.*;
 
 // Need tags to indicate relevant search categories
 /**
@@ -11,37 +13,34 @@ import java.util.*;
  */
 @Entity
 @Table(name = "NOTES")
-public class Note extends NoteElement {
+public class Note extends NoteElement<Note> {
     @Id
     @Column(name="NOTE_ID")
     @GeneratedValue
     private Long noteId;
     private String description;
-    private final LocalDateTime created;
     // Using "? extends NoteElement" here produces errors...
     private ArrayList<NoteElement> elements;
     private Map<Class<? extends NoteElement>, List<Integer>> elementLocator;
+    private List<String> categories;
+    private List<CategoryTag> tags;
+    private static final Logger LOG = LogManager.getLogger(Note.class);
 
     // ToDo: Will this update the created date every time a note is retrieved from the DB?
     protected Note() {
         super(null);
-        created = LocalDateTime.now();
     }
 
     public Note(String title, String desc) {
-        super(title);
-        this.description = desc;
-        created = LocalDateTime.now();
+        super(title, desc);
         elements = new ArrayList<>();
         // This contains a map from Note element class to element indexes in the elements list
         elementLocator = new HashMap<Class<? extends NoteElement>, List<Integer>>();
+        this.categories = new ArrayList<>();
+        this.tags = new ArrayList<>();
     }
 
     public Note(String title) { this(title, null); }
-
-    public String getDescription() { return description; }
-    public void setDescription(String newDescription) { description = newDescription; }
-    public LocalDateTime getDateCreated() { return created; }
 
     // ToDo: Can I delete this?
     public ArrayList<NoteElement> getElements() { return elements; }
@@ -50,7 +49,7 @@ public class Note extends NoteElement {
      * Add new Note element at the end of the current note.
      * @param newElement The new Note element to be added
      */
-    public void addElement(NoteElement newElement) {
+    public void addElement(NoteElement<?> newElement) {
         // elements.add(newElement);
         addElement(newElement, elements.size());
     }
@@ -60,9 +59,9 @@ public class Note extends NoteElement {
      * @param newElement The new Note element to be added
      * @param index The location (0-based) of the new element
      */
-    public <T extends NoteElement> void addElement(T newElement, int index) {
+    public void addElement(NoteElement<?> newElement, int index) {
         elements.add(index, newElement);
-        updateElementLocator(newElement.getClass(), index);
+        updateElementLocator(newElement, index);
     }
 
     /**
@@ -72,32 +71,64 @@ public class Note extends NoteElement {
      * 0 would refer to the first one and index 1 would refer to the second (regardless
      * of their position in the overall list of {@link Note} elements).
      *
-     * ToDo: Describe how this works...
      * @param elementClass The class of the {@link Note} element to be retrieved
      * @param index The 0-based index of the {@link Note} element to be retrieved
      *              (for elements of the same class type)
      * @return The requested {@link Note} element (or an exception)
      */
-    public NoteElement getElement(Class<? extends NoteElement> elementClass, int index) {
+    public NoteElement<?> getElement(Class<? extends NoteElement<?>> elementClass, int index) {
         if (!elementLocator.containsKey(elementClass)) {
             throw new RuntimeException("No " + elementClass.getSimpleName() + " element found in this note");
         }
-        if (index >= elements.size()) {
-            throw new RuntimeException("Invalid index (" + index + ") for note element list (size "
+        if (index >= elementLocator.get(elementClass).size()) {
+            throw new RuntimeException("Invalid index (" + index + ") for list of " + elementClass.getSimpleName()
+                    + " elements (size " + elementLocator.get(elementClass).size() + ")");
+        }
+        int elementIndex = elementLocator.get(elementClass).get(index);
+        if (elementIndex >= elements.size()) {
+            LOG.info(elementClass.getSimpleName() + " element index " + index
+                    + " maps to main element index " + elementIndex);
+            throw new RuntimeException("Invalid index (" + elementIndex + ") for note element list (size "
                     + elements.size() + ")");
         }
         // ToDo: Do a sanity check that the returned element is the right class?
-        return elements.get(elementLocator.get(elementClass).get(index));
+        return elements.get(elementIndex);
     }
 
-    private void updateElementLocator(Class<? extends NoteElement> elementClass, int index) {
-        if (!elementLocator.containsKey(elementClass)) {
-            elementLocator.put(elementClass, new ArrayList<>());
+    // ToDo: Add Javadoc
+    public boolean hasElement(Class< NoteElement<?>> elementClass) {
+        return elementLocator.containsKey(elementClass) && elementLocator.get(elementClass).size() > 0;
+    }
+
+    // Explain how this works?
+    // I get weird generic errors if I attempt to pass the class here
+    private void updateElementLocator(NoteElement<?> element, int index) {
+        if (!elementLocator.containsKey(element.getClass())) {
+            elementLocator.put(element.getClass(), new ArrayList<>());
         }
-        elementLocator.get(elementClass).add(index);
+        elementLocator.get(element.getClass()).add(index);
     }
 
-    // Add deleteElement()?
+    // Add deleteElement()? (also need to update elementLocator)
+    // ToDo: Does a Note really need to know what category lists it's in?
+    // ToDo: Add Javadoc
+    // ToDo: Add tests for categories and tags
+    public List<String> getCategories() { return categories; }
+    public Note addCategory(String category) { categories.add(category); return this; }
+    public Note addCategories(List<String> cats) { categories.addAll(cats); return this; }
+
+    public List<CategoryTag> getTags() { return tags; }
+    public Note addTag(CategoryTag tag) { tags.add(tag); return this; }
+    public Note addTags(List<CategoryTag> tagList) { tags.addAll(tagList); return this; }
+    public boolean containsAllTags(List<CategoryTag> tagList) { return tags.containsAll(tagList); }
+    public boolean containsAnyTags(List<CategoryTag> tagList) {
+        for (CategoryTag tag : tagList) {
+            if (tags.contains(tag)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public String toString() {
@@ -105,7 +136,7 @@ public class Note extends NoteElement {
         if (description != null && !description.equals("")) {
             result += "\n" + description;
         }
-        for (NoteElement elem : elements) {
+        for (NoteElement<?> elem : elements) {
             // ToDo: Warn if element is null?
             result = result.concat("\n\n" + elem);
         }
@@ -113,7 +144,7 @@ public class Note extends NoteElement {
     }
 
     // For testing
-    protected NoteElement getElement(int index) { return elements.get(index); }
+    protected NoteElement<?> getElement(int index) { return elements.get(index); }
 
     protected void clear() {
         elements.clear();
