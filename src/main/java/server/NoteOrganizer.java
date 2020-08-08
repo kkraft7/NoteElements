@@ -4,7 +4,7 @@ import server.categories.*;
 import java.util.*;
 
 // ToDo: Add Javadoc!
-// ToDo: Add tests
+// ToDo: Add DEBUG logging (to add context for exceptions)
 // ToDo: Can (or should) this class be a static singleton (how would that work with Hibernate)?
 public class NoteOrganizer {
     // ToDo: Try making these final once I've got the Hibernate stuff working
@@ -14,6 +14,16 @@ public class NoteOrganizer {
     public NoteOrganizer() {
         notes = new ArrayList<>();
         categories = new HashMap<>();
+    }
+
+    public Note getNote(int index) {
+        checkForValidNoteIndex(index);
+        return notes.get(index);
+    }
+
+    public List<Note> getCategory(String name) {
+        checkForValidCategory(name);
+        return categories.get(name);
     }
 
     public void addNote(Note newNote) { notes.add(newNote); }
@@ -33,11 +43,37 @@ public class NoteOrganizer {
         if (!categories.containsKey(name)) {
             addCategory(name);
         }
-        if (position >= categories.get(name).size()) {
+        if (position > categories.get(name).size()) {
             throw new RuntimeException("Invalid index (" + position + ") for " + name
                     + " category (size " + categories.get(name).size() + ")");
         }
         categories.get(name).addAll(position, notes);
+    }
+
+    public Note deleteNote(int index) {
+        checkForValidNoteIndex(index);
+        return notes.remove(index);
+    }
+    // ToDo: Will this work for notes that have been retrieved from the DB?
+    public Note deleteNote(Note n) {
+        checkForValidNoteObject(n);
+        notes.remove(n);
+        return n;
+    }
+
+    public void deleteCategory(String name) {
+        checkForValidCategory(name);
+        // ToDo: Only allow this if category is empty (doesn't contain any notes)?
+        categories.remove(name);
+    }
+
+    // ToDo: Add version that takes a note index? Also return the note?
+    public void removeNoteFromCategory(String name, Note n) {
+        checkForValidCategory(name);
+        if (!categories.get(name).contains(n)) {
+            throw new RuntimeException("Unable to locate note '" + n.getName() + "' in category '" + name + "'");
+        }
+        categories.get(name).remove(n);
     }
 
     public List<Note> getNotesWithTag(CategoryTag tag) { return getNotesWithTag(tag, notes); }
@@ -65,4 +101,41 @@ public class NoteOrganizer {
     public void initialize() {
         // ToDo: Set up standard Note categories (e.g. scheduled, purchase, etc.)
     }
+
+    private void checkForValidNoteIndex(int index) {
+        if (index >= notes.size()) {
+            throw new RuntimeException("Invalid index (" + index + ") for note list (size " + notes.size() + ")");
+        }
+    }
+
+    private void checkForValidNoteObject(Note n) {
+        if (!notes.contains(n)) {
+            throw new RuntimeException("Failed to locate note: '" + n.getName() + "'");
+        }
+    }
+
+    private void checkForValidCategory(String name) {
+        if (!categories.containsKey(name)) {
+            throw new RuntimeException("Unable to locate category '" + name + "'");
+        }
+    }
+
+    // =================================== For testing purposes ===================================
+    protected Note addTestNote() {
+        Note testNote = Note.createGenericTestNote();
+        addNote(testNote);
+        return testNote;
+    }
+    protected List<Note> addTestNotes(int noteCount) {
+        List<Note> noteList = new ArrayList<>();
+        for (int i = 0; i < noteCount; i++) {
+            noteList.add(addTestNote());
+        }
+        return noteList;
+    }
+
+    protected void clearNotes() { notes.clear(); }
+    protected void clearCategories() { categories.clear(); }
+    protected int numberOfNotes() { return notes.size(); }
+    protected int numberOfCategories() { return categories.size(); }
 }

@@ -22,8 +22,8 @@ public class Note extends NoteElement<Note> {
     // Using "? extends NoteElement" here produces errors...
     private ArrayList<NoteElement> elements;
     private Map<Class<? extends NoteElement>, List<Integer>> elementLocator;
-    private List<String> categories;
-    private List<CategoryTag> tags;
+    private Set<String> categories;
+    private Set<CategoryTag> tags;
     private static final Logger LOG = LogManager.getLogger(Note.class);
 
     // ToDo: Will this update the created date every time a note is retrieved from the DB?
@@ -35,9 +35,9 @@ public class Note extends NoteElement<Note> {
         super(title, desc);
         elements = new ArrayList<>();
         // This contains a map from Note element class to element indexes in the elements list
-        elementLocator = new HashMap<Class<? extends NoteElement>, List<Integer>>();
-        this.categories = new ArrayList<>();
-        this.tags = new ArrayList<>();
+        elementLocator = new HashMap<>();
+        this.categories = new HashSet<>();
+        this.tags = new HashSet<>();
     }
 
     public Note(String title) { this(title, null); }
@@ -113,11 +113,11 @@ public class Note extends NoteElement<Note> {
     // ToDo: Does a Note really need to know what category lists it's in?
     // ToDo: Add Javadoc
     // ToDo: Add tests for categories and tags
-    public List<String> getCategories() { return categories; }
+    public Set<String> getCategories() { return categories; }
     public Note addCategory(String category) { categories.add(category); return this; }
     public Note addCategories(List<String> cats) { categories.addAll(cats); return this; }
 
-    public List<CategoryTag> getTags() { return tags; }
+    public Set<CategoryTag> getTags() { return tags; }
     public Note addTag(CategoryTag tag) { tags.add(tag); return this; }
     public Note addTags(List<CategoryTag> tagList) { tags.addAll(tagList); return this; }
     public boolean containsAllTags(List<CategoryTag> tagList) { return tags.containsAll(tagList); }
@@ -143,13 +143,21 @@ public class Note extends NoteElement<Note> {
         return result;
     }
 
-    // For testing
+    // For testing purposes
     protected NoteElement<?> getElement(int index) { return elements.get(index); }
 
+    // Add clearNote() to get back to original "before" state (same as below?)
     protected void clear() {
         elements.clear();
         elementLocator.clear();
     }
 
-    // Add clearNote() to get back to original "before" state
+    // Add a method to reset noteNumber to 0?
+    private static int noteNumber = 0;
+    protected static Note createGenericTestNote() { return createGenericTestNote(null); }
+    protected static Note createGenericTestNote(String baseName) {
+        noteNumber++;
+        String name = (baseName == null ? "Test Note" : baseName) + " #" + noteNumber;
+        return new Note(name, "Description for " + name);
+    }
 }

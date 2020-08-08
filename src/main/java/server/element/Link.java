@@ -9,6 +9,7 @@ import java.net.URL;
 public class Link extends NoteElement<Link> {
   // ToDo: See if I can set this to final once I get the Hibernate stuff working
   private URL linkURL;
+  private boolean broken = false;
 
   // No-arg constructor required by Hibernate
   protected Link() {
@@ -25,6 +26,9 @@ public class Link extends NoteElement<Link> {
 
   public URL getUrl() { return linkURL; }
   // ToDo: Need setter for Hibernate?
+
+  public boolean isBroken() { return broken; }
+  public void setBroken(boolean value) { broken = value; }
 
   @Override
   public String toString() {

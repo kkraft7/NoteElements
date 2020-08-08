@@ -14,10 +14,10 @@ public class NoteTest {
 
     @BeforeAll
     public static void setUpTests() throws MalformedURLException {
-        testNote = new Note("Test Note", "Description for Test Note");
-        subNote1 = new Note("Test sub-note 1", "Description for sub-note 1");
+        testNote = Note.createGenericTestNote();
+        subNote1 = Note.createGenericTestNote("Test sub-note");
         subNote1.addElement(new MediaItem("I'm Your Captain", "Grand Funk", MediaType.SONG));
-        subNote2 = new Note("Test sub-note 2", "Description for sub-note 2");
+        subNote2 = Note.createGenericTestNote("Test sub-note");
         subNote2.addElement(new Link("Google", "http://facebook.com"));
     }
 
@@ -60,7 +60,7 @@ public class NoteTest {
         testNote.addElement(subNote1);
         testNote.addElement(subNote2);
 
-        // System.out.println(testNote);
+        System.out.println(testNote);
         assertSame("Expected Contact type at position 0",
                 testNote.getElement(0), testNote.getElement(Note.class, 0));
         assertSame("Expected Contact type at position 0",
@@ -72,7 +72,7 @@ public class NoteTest {
         Exception ex = assertThrows(RuntimeException.class, () -> testNote.getElement(Note.class, 0));
         // System.out.println("Exception message: " + ex.getMessage());
         String expectedMessage = "No Note element found";
-        assertTrue("Exception message contains " + expectedMessage,
+        assertTrue("Exception message contains '" + expectedMessage + "'",
                 ex.getMessage().contains(expectedMessage));
     }
 
