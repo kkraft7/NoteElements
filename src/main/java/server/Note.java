@@ -1,6 +1,7 @@
 package server;
 
-import server.element.NoteElement;
+import server.categories.MediaType;
+import server.element.*;
 import server.categories.CategoryTag;
 
 import javax.persistence.*;
@@ -19,7 +20,7 @@ public class Note extends NoteElement<Note> {
     @GeneratedValue
     private Long noteId;
     private String description;
-    // Using "? extends NoteElement" here produces errors...
+    // Using "? extends NoteElement" or "NoteElement<?>" here produces compile errors
     private ArrayList<NoteElement> elements;
     private Map<Class<? extends NoteElement>, List<Integer>> elementLocator;
     private Set<String> categories;
@@ -42,7 +43,6 @@ public class Note extends NoteElement<Note> {
 
     public Note(String title) { this(title, null); }
 
-    // ToDo: Can I delete this?
     public ArrayList<NoteElement> getElements() { return elements; }
 
     /**
@@ -61,7 +61,40 @@ public class Note extends NoteElement<Note> {
      */
     public void addElement(NoteElement<?> newElement, int index) {
         elements.add(index, newElement);
-        updateElementLocator(newElement, index);
+        updateElementLocatorAfterAdd(newElement, index);
+    }
+
+    // Explain how this works?
+    // I get weird generic errors if I attempt to pass the class here
+    private void updateElementLocatorAfterAdd(NoteElement<?> element, int index) {
+        if (!elementLocator.containsKey(element.getClass())) {
+            elementLocator.put(element.getClass(), new ArrayList<>());
+        }
+        elementLocator.get(element.getClass()).add(index);
+    }
+
+    public void removeElement(NoteElement<?> element) {
+        elements.remove(element);   // Check for result of remove()?
+        updateElementLocatorAfterDelete(element);
+    }
+
+
+    private void updateElementLocatorAfterDelete(NoteElement<?> element) {
+        if (elementLocator.containsKey(element.getClass())) {
+            if (!elementLocator.get(element.getClass()).remove(element)) {
+                LOG.warn("Element locator for Note '" + getName() + "' failed to remove element '"
+                        + element.getName() + "'");
+            }
+        }
+        else {
+            LOG.warn("Element locator for Note '" + getName() + "' contains no element of type "
+                    + element.getClass().getSimpleName());
+        }
+    }
+
+    // ToDo: Javadoc - this assumes there is only one element of the specified type? Or just returns the first one?
+    public NoteElement<?> getElement(Class<? extends NoteElement<?>> elementClass) {
+        return getElement(elementClass, 0);
     }
 
     /**
@@ -95,39 +128,26 @@ public class Note extends NoteElement<Note> {
         return elements.get(elementIndex);
     }
 
+    protected NoteElement<?> getElement(int index) { return elements.get(index); }
+
     // ToDo: Add Javadoc
     public boolean hasElement(Class< NoteElement<?>> elementClass) {
         return elementLocator.containsKey(elementClass) && elementLocator.get(elementClass).size() > 0;
     }
 
-    // Explain how this works?
-    // I get weird generic errors if I attempt to pass the class here
-    private void updateElementLocator(NoteElement<?> element, int index) {
-        if (!elementLocator.containsKey(element.getClass())) {
-            elementLocator.put(element.getClass(), new ArrayList<>());
-        }
-        elementLocator.get(element.getClass()).add(index);
-    }
-
-    // Add deleteElement()? (also need to update elementLocator)
-    // ToDo: Does a Note really need to know what category lists it's in?
     // ToDo: Add Javadoc
-    // ToDo: Add tests for categories and tags
     public Set<String> getCategories() { return categories; }
     public Note addCategory(String category) { categories.add(category); return this; }
-    public Note addCategories(List<String> cats) { categories.addAll(cats); return this; }
+    // ToDo: Add removeCategory()?
+    public Note addCategories(Set<String> cats) { categories.addAll(cats); return this; }
 
     public Set<CategoryTag> getTags() { return tags; }
     public Note addTag(CategoryTag tag) { tags.add(tag); return this; }
-    public Note addTags(List<CategoryTag> tagList) { tags.addAll(tagList); return this; }
-    public boolean containsAllTags(List<CategoryTag> tagList) { return tags.containsAll(tagList); }
-    public boolean containsAnyTags(List<CategoryTag> tagList) {
-        for (CategoryTag tag : tagList) {
-            if (tags.contains(tag)) {
-                return true;
-            }
-        }
-        return false;
+    public Note addTags(Set<CategoryTag> tagList) { tags.addAll(tagList); return this; }
+    // ToDo: Need Javadoc!
+    public boolean containsAllTags(Set<CategoryTag> tagList) { return tags.containsAll(tagList); }
+    public boolean containsAnyTags(Set<CategoryTag> tagList) {
+        return tagList.stream().anyMatch(tag -> tags.contains(tag));
     }
 
     @Override
@@ -140,24 +160,20 @@ public class Note extends NoteElement<Note> {
             // ToDo: Warn if element is null?
             result = result.concat("\n\n" + elem);
         }
+        result += "\n\nCategories:";
+        for (String cat : categories) {
+            result = result.concat("\n" + cat);
+        }
+        result += "\n\nTags:";
+        for (CategoryTag tag : tags) {
+            result = result.concat("\n" + tag);
+        }
         return result;
     }
 
     // For testing purposes
-    protected NoteElement<?> getElement(int index) { return elements.get(index); }
-
-    // Add clearNote() to get back to original "before" state (same as below?)
     protected void clear() {
         elements.clear();
         elementLocator.clear();
-    }
-
-    // Add a method to reset noteNumber to 0?
-    private static int noteNumber = 0;
-    protected static Note createGenericTestNote() { return createGenericTestNote(null); }
-    protected static Note createGenericTestNote(String baseName) {
-        noteNumber++;
-        String name = (baseName == null ? "Test Note" : baseName) + " #" + noteNumber;
-        return new Note(name, "Description for " + name);
     }
 }

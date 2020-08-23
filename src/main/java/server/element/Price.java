@@ -16,9 +16,13 @@ public class Price extends NoteElement<Price> {
         this.price = null;
     }
 
-    public Price(String title, String description, BigDecimal itemPrice) {
-        super(title, description);
+    public Price(String itemName, String description, BigDecimal itemPrice) {
+        super(itemName, description);
         this.price = itemPrice.setScale(2, RoundingMode.UNNECESSARY);
+    }
+
+    public Price(String itemName, String description, double itemPrice) {
+        this(itemName, null, new BigDecimal(itemPrice));
     }
 
     public Price(Double itemPrice) {

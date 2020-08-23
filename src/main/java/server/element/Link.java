@@ -17,12 +17,16 @@ public class Link extends NoteElement<Link> {
     this.linkURL = null;
   }
 
-  public Link(String linkName, String linkNote, String url) throws MalformedURLException {
+  public Link(String linkName, String linkNote, String url) {
     super(linkName, linkNote);
-    this.linkURL = new URL(url);
+    try {
+      this.linkURL = new URL(url);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException("Failed to create link for malformed URL: " + url);
+    }
   }
 
-  public Link(String name, String url) throws MalformedURLException{ this(name, null, url); }
+  public Link(String name, String url) { this(name, null, url); }
 
   public URL getUrl() { return linkURL; }
   // ToDo: Need setter for Hibernate?

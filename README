@@ -3,6 +3,7 @@ Eventually this should be a proper README file with instructions and documentati
 For now it is just project notes.
 
 To do items:
-* Separate node hierarchies for notes and categories?
-* Add a categories property (or list?) for each note?
+* Must fill out the Javadoc coverage!
 * Figure out proper Hibernate annotations for classes and properties
+* There is an issue with categories since the note categories are tightly coupled
+  with the category lists in the main program

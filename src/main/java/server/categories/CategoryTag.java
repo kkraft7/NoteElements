@@ -1,6 +1,14 @@
 package server.categories;
 
-// Marker interface for enum category tags
+import java.util.*;
+
+// Interface for enum category tags
 public interface CategoryTag {
-    // Define common category tag methods here
+    static final Random rand = new Random();
+
+    default CategoryTag getRandomTag() {
+        return getTagValues().get(rand.nextInt(getTagValues().size()));
+    }
+
+    abstract public List<CategoryTag> getTagValues();
 }
